@@ -10,10 +10,9 @@ func main() {
 	// Simple TCP Check
 	conn, err := net.Dial("tcp", "localhost:8081")
 	if err != nil {
-		log.Println( "Connection refused!")
+		log.Println( "CYBR - You cannot be reached!")
 	} else {
-		log.Println("Connection successful!")
+		log.Println("CYBR - You can be reached!")
 		conn.Close()
 	}
-	
 }
