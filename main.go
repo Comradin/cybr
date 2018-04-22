@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"io/ioutil"
 )
 
 type Check struct {
@@ -20,6 +21,16 @@ func main() {
 	// get config directory from environment
 	if config_dir, exists := os.LookupEnv("cybr_config_dir"); exists {
 		log.Println(config_dir)
+		// no check if config_dir exists!
+		files, err := ioutil.ReadDir(config_dir)
+		if err != nil {
+			log.Fatal("Could not read config directory")
+		}
+
+		// list config file names
+		for _, file := range files {
+			fmt.Println(file.Name())
+		}
 	} else {
 		log.Fatal("No config found")
 	}
