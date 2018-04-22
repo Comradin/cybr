@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 )
 
 type Check struct {
@@ -15,6 +16,13 @@ type Check struct {
 }
 
 func main() {
+
+	// get config directory from environment
+	if config_dir, exists := os.LookupEnv("cybr_config_dir"); exists {
+		log.Println(config_dir)
+	} else {
+		log.Fatal("No config found")
+	}
 
 	// raw json config
 	raw := `
