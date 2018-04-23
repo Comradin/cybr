@@ -21,10 +21,10 @@ func main() {
 	var content []byte
 
 	// get config directory from environment
-	if config_dir, exists := os.LookupEnv("cybr_config_dir"); exists {
-		log.Println(config_dir)
-		// no check if config_dir exists!
-		files, err := ioutil.ReadDir(config_dir)
+	if configDir, exists := os.LookupEnv("cybr_config_dir"); exists {
+		log.Println(configDir)
+		// no check if configDir exists!
+		files, err := ioutil.ReadDir(configDir)
 		if err != nil {
 			log.Fatal("Could not read config directory")
 		}
@@ -36,7 +36,7 @@ func main() {
 		// list config file names
 		for _, file := range files {
 			fmt.Println(file.Name())
-			content, err = ioutil.ReadFile(config_dir+"/"+file.Name())
+			content, err = ioutil.ReadFile(configDir +"/"+file.Name())
 			if err != nil {
 				log.Fatal("Could not read config file")
 			}
