@@ -27,6 +27,10 @@ func main() {
 			log.Fatal("Could not read config directory")
 		}
 
+		if len(files) == 0 {
+			log.Fatal("No configurations found - exiting")
+		}
+
 		// list config file names
 		for _, file := range files {
 			fmt.Println(file.Name())
