@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
-	"io/ioutil"
+	"time"
+	"strings"
 )
 
 type Check struct {
@@ -19,6 +21,7 @@ type Check struct {
 func main() {
 
 	var content []byte
+	var Checks []Check
 
 	// get config directory from environment
 	if configDir, exists := os.LookupEnv("cybr_config_dir"); exists {
@@ -36,29 +39,37 @@ func main() {
 		// list config file names
 		for _, file := range files {
 			fmt.Println(file.Name())
-			content, err = ioutil.ReadFile(configDir +"/"+file.Name())
+			content, err = ioutil.ReadFile(configDir + "/" + file.Name())
 			if err != nil {
 				log.Fatal("Could not read config file")
 			}
+
+			// create an Check instance and unmarshal the raw json into
+			simpletcp := Check{}
+			err := json.Unmarshal(content, &simpletcp)
+			if err != nil {
+				log.Fatal("Could not read config")
+			}
+
+			Checks = append(Checks, simpletcp)
 
 		}
 	} else {
 		log.Fatal("No config found")
 	}
 
-	// create an Check instance and unmarshal the raw json into
-	simpletcp := Check{}
-	err := json.Unmarshal(content, &simpletcp)
-	if err != nil {
-		log.Fatal("Could not read config")
-	}
 
-	// Simple TCP Check
-	conn, err := net.Dial(simpletcp.Type, fmt.Sprintf("%s:%s", simpletcp.Host, simpletcp.Port))
-	if err != nil {
-		log.Printf("CYBR (%s) - You cannot be reached!\n", simpletcp.Name)
-	} else {
-		log.Printf("CYBR (%s) - You can be reached!", simpletcp.Name)
-		conn.Close()
+
+	for _, check := range Checks {
+
+		// Simple TCP Check
+		conn, err := net.DialTimeout(strings.ToLower(check.Type), fmt.Sprintf("%s:%d", check.Host, check.Port), 2*time.Second)
+		if err != nil {
+			log.Printf("CYBR (%s) - You cannot be reached: %v!\n", check.Name, err)
+		} else {
+			log.Printf("CYBR (%s) - You can be reached!", check.Name)
+			conn.Close()
+		}
+
 	}
 }
