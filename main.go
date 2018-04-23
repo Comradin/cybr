@@ -18,6 +18,8 @@ type Check struct {
 
 func main() {
 
+	var content []byte
+
 	// get config directory from environment
 	if config_dir, exists := os.LookupEnv("cybr_config_dir"); exists {
 		log.Println(config_dir)
@@ -34,24 +36,19 @@ func main() {
 		// list config file names
 		for _, file := range files {
 			fmt.Println(file.Name())
+			content, err = ioutil.ReadFile(config_dir+"/"+file.Name())
+			if err != nil {
+				log.Fatal("Could not read config file")
+			}
+
 		}
 	} else {
 		log.Fatal("No config found")
 	}
 
-	// raw json config
-	raw := `
-{
-  "Name": "Simple TCP",
-  "type": "TCP",
-  "host": "localhost",
-  "port": 8081
-}
-`
-
 	// create an Check instance and unmarshal the raw json into
 	simpletcp := Check{}
-	err := json.Unmarshal([]byte(raw), &simpletcp)
+	err := json.Unmarshal(content, &simpletcp)
 	if err != nil {
 		log.Fatal("Could not read config")
 	}
