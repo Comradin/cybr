@@ -15,3 +15,6 @@
 
 # IntelliJ project directory
 .idea/
+
+# Project binary
+/cybr
