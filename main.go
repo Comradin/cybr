@@ -6,9 +6,17 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
 	"os"
-	"time"
 	"strings"
+	"time"
+
+	"github.com/gorilla/mux"
+)
+
+var (
+	content []byte
+	Checks  []Check
 )
 
 type Check struct {
@@ -19,9 +27,11 @@ type Check struct {
 }
 
 func main() {
-
-	var content []byte
-	var Checks []Check
+	// Initialize the gorilla/mux router
+	r := mux.NewRouter()
+	r.HandleFunc("/", rootHandler)
+	r.HandleFunc("/api/listChecks", listChecksHandler)
+	r.HandleFunc("/api/addCheck", addChecksHandler)
 
 	// get config directory from environment
 	if configDir, exists := os.LookupEnv("cybr_config_dir"); exists {
@@ -58,18 +68,38 @@ func main() {
 		log.Fatal("No config found")
 	}
 
+	log.Fatal(http.ListenAndServe(":8082", r))
 
+}
 
+// rootHandler
+// Will list all status checks by iterating over the []Checks slice
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Number of checks defined: %d\n", len(Checks))
 	for _, check := range Checks {
 
 		// Simple TCP Check
 		conn, err := net.DialTimeout(strings.ToLower(check.Type), fmt.Sprintf("%s:%d", check.Host, check.Port), 2*time.Second)
 		if err != nil {
-			log.Printf("CYBR (%s) - You cannot be reached: %v!\n", check.Name, err)
+			fmt.Fprintf(w,"CYBR (%s) - You cannot be reached: %v!\n", check.Name, err)
 		} else {
-			log.Printf("CYBR (%s) - You can be reached!", check.Name)
+			fmt.Fprintf(w,"CYBR (%s) - You can be reached!\n", check.Name)
 			conn.Close()
 		}
-
 	}
+}
+
+// listChecksHandler
+// Will print a simplified List of all configured checks
+func listChecksHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Number of checks defined: %d\n", len(Checks))
+	for _, check := range Checks {
+		fmt.Fprintf(w, "%s - %s\n", check.Type, check.Name)
+	}
+}
+
+// addCheckHandler
+// Will provide a way to add more checks by calling this API endpoint
+func addChecksHandler(w http.ResponseWriter, r *http.Request) {
+	// Intentionally empty
 }
